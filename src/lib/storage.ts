@@ -17,59 +17,7 @@ function addDays(iso: string, n: number) {
 const TODAY = todayIso();
 
 function initialPlans(): Plan[] {
-  return [
-    {
-      id: 1,
-      isoDate: TODAY,
-      label: "Mia",
-      layers: [
-        {
-          templateIdx: 3,
-          sections: cloneSections(layoutTemplates[3].sections),
-          dishes: {
-            "0": { name: "Meatballs", section: "Main", ingredients: [{ name: "Ground beef", qty: "200g" }] },
-            "1": { name: "Broccoli", section: "Veg", ingredients: [{ name: "Broccoli florets", qty: "1 cup" }] },
-            "2": { name: "Cashews", section: "Snack", ingredients: [] },
-            "3": { name: "Raspberries", section: "Fruit", ingredients: [{ name: "Raspberries", qty: "1/2 cup" }] },
-            "4": { name: "Sweet potato", section: "Treat", ingredients: [{ name: "Sweet potato", qty: "1 small" }] },
-          },
-        },
-      ],
-    },
-    {
-      id: 2,
-      isoDate: TODAY,
-      label: "Leo",
-      layers: [
-        {
-          templateIdx: 1,
-          sections: cloneSections(layoutTemplates[1].sections),
-          dishes: {
-            "0": { name: "Onigiri", section: "Main", ingredients: [{ name: "Cooked rice", qty: "1 cup" }] },
-            "1": { name: "Edamame", section: "Protein", ingredients: [{ name: "Frozen edamame", qty: "80g" }] },
-            "2": { name: "Grapes", section: "Fruit", ingredients: [] },
-          },
-        },
-      ],
-    },
-    {
-      id: 3,
-      isoDate: addDays(TODAY, 2),
-      label: "Mia",
-      layers: [
-        {
-          templateIdx: 2,
-          sections: cloneSections(layoutTemplates[2].sections),
-          dishes: {
-            "0": { name: "Tamagoyaki", section: "Main", ingredients: [{ name: "Eggs", qty: "3" }] },
-            "1": { name: "Crackers", section: "Snack", ingredients: [] },
-            "2": { name: "Strawberries", section: "Fruit", ingredients: [{ name: "Strawberries", qty: "5" }] },
-            "3": { name: "Cookie", section: "Treat", ingredients: [] },
-          },
-        },
-      ],
-    },
-  ];
+  return [];
 }
 
 export function makeLayer(templateIdx = 0): Layer {
