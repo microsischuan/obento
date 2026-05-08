@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>obento — kids bento planner</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  background: #f7f4ef;
+  color: #2a2a28;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+:root {
+  --sage: #7a9e8e;
+  --sage-deep: #5d8474;
+  --sage-light: #e8f0ec;
+  --sage-mid: #b8d0c5;
+  --cream: #f7f4ef;
+  --warm: #e8e2d9;
+  --accent: #c17f5a;
+  --accent-light: #f5ede6;
+  --plum: #9e7ab8;
+  --plum-light: #f0e8f5;
+  --peach: #f4a78a;
+  --peach-light: #fce5dc;
+  --radius: 14px;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f5f2ed;
+  --text-primary: #2a2a28;
+  --text-secondary: #6b6a66;
+  --text-tertiary: #9a9890;
+  --border-tertiary: #e0dcd4;
+  --border-secondary: #c8c4bc;
+  --font-serif: Georgia, "Times New Roman", serif;
+}
+
+.app {
+  max-width: 700px;
+  margin: 0 auto;
+  background: var(--bg-primary);
+  border-radius: 18px;
+  border: 0.5px solid var(--border-tertiary);
+  min-height: 640px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px 12px;
+  border-bottom: 0.5px solid var(--border-tertiary);
+}
+
+.logo-lockup {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 22px;
+  line-height: 1;
+}
+.logo-lockup span { color: var(--sage-deep); }
+
+.nav-tabs { display: flex; gap: 4px; }
+.nav-tab {
+  padding: 5px 14px; border-radius: 20px; font-size: 13px; cursor: pointer;
+  border: 0.5px solid transparent; color: var(--text-secondary);
+  transition: all 0.15s; display: flex; align-items: center; gap: 5px;
+}
+.nav-tab.active { background: var(--sage); color: #fff; border-color: var(--sage); }
+.nav-tab:hover:not(.active) { border-color: var(--border-tertiary); background: var(--bg-secondary); }
+
+.screen { display: none; padding: 20px; flex: 1; }
+.screen.active { display: block; }
+
+.section-label { font-size: 11px; font-weight: 500; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+
+.step-indicator { display: flex; gap: 8px; align-items: center; margin-bottom: 20px; }
+.step { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-tertiary); }
+.step.active { color: var(--sage-deep); font-weight: 500; }
+.step.done { color: var(--text-secondary); }
+.step-dot { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--border-tertiary); display: flex; align-items: center; justify-content: center; font-size: 11px; }
+.step.active .step-dot { background: var(--sage); border-color: var(--sage); color: #fff; }
+.step.done .step-dot { background: var(--sage-mid); border-color: var(--sage-mid); color: #fff; }
+.step-line { flex: 1; height: 1px; background: var(--border-tertiary); }
+
+.layer-stack { display: flex; flex-direction: column; gap: 12px; margin-bottom: 14px; }
+.layer-block { border: 0.5px solid var(--border-tertiary); border-radius: var(--radius); overflow: hidden; background: var(--bg-primary); }
+.layer-head { background: var(--bg-secondary); padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; border-bottom: 0.5px solid var(--border-tertiary); }
+.layer-title { font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 6px; }
+.icon-btn { width: 26px; height: 26px; border-radius: 6px; border: none; background: transparent; cursor: pointer; color: var(--text-tertiary); display: flex; align-items: center; justify-content: center; font-size: 14px; }
+.icon-btn:hover { background: var(--bg-primary); color: var(--accent); }
+.layer-body { padding: 12px; }
+
+.layout-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.layout-card {
+  border: 0.5px solid var(--border-tertiary); border-radius: 10px; padding: 10px;
+  cursor: pointer; transition: all 0.15s; background: var(--bg-primary);
+}
+.layout-card:hover { border-color: var(--sage); }
+.layout-card.selected { border: 1.5px solid var(--sage); background: var(--sage-light); }
+.layout-card .label { font-size: 11px; color: var(--text-secondary); margin-top: 6px; text-align: center; }
+.layout-card .label-name { font-weight: 500; font-size: 12px; color: var(--text-primary); }
+.layout-svg { display: block; width: 100%; height: 56px; }
+
+.add-layer-btn {
+  width: 100%; padding: 12px; border: 1.5px dashed var(--border-tertiary);
+  border-radius: var(--radius); background: transparent; cursor: pointer;
+  font-size: 13px; color: var(--text-secondary); display: flex; align-items: center;
+  justify-content: center; gap: 6px; transition: all 0.15s;
+}
+.add-layer-btn:hover { border-color: var(--sage); color: var(--sage-deep); background: var(--sage-light); }
+
+.bento-svg-wrap { background: var(--bg-primary); border-radius: 12px; padding: 8px; }
+.bento-svg { display: block; width: 100%; }
+
+.drag-hint { font-size: 11px; color: var(--text-tertiary); display: flex; align-items: center; gap: 5px; margin-bottom: 8px; }
+
+.modal-overlay {
+  display: none; position: fixed; inset: 0; z-index: 100;
+  background: rgba(40,50,45,0.35); align-items: center; justify-content: center;
+  backdrop-filter: blur(4px); padding: 20px;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--bg-primary); border-radius: 20px;
+  padding: 0; width: 380px; max-width: 100%; max-height: 90vh; overflow-y: auto;
+  border: 0.5px solid var(--border-tertiary);
+}
+.modal-head { background: var(--sage-light); padding: 18px 20px 16px; display: flex; align-items: center; gap: 10px; }
+.modal-head-icon { width: 36px; height: 36px; background: #fff; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--sage-deep); font-size: 18px; }
+.modal-head h3 { font-size: 15px; font-weight: 500; }
+.modal-head .sub { font-size: 11px; color: var(--sage-deep); text-transform: uppercase; letter-spacing: 0.6px; }
+.modal-body { padding: 18px 20px; }
+.modal-body label { display: block; font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; }
+.modal-body input, .modal-body select { width: 100%; border: 0.5px solid var(--border-tertiary); border-radius: 8px; padding: 9px 12px; font-size: 13px; background: var(--bg-secondary); color: var(--text-primary); outline: none; }
+.modal-body input:focus, .modal-body select:focus { border-color: var(--sage); background: var(--bg-primary); }
+.field { margin-bottom: 14px; }
+.field-row { display: flex; gap: 10px; }
+.field-row .field { flex: 1; }
+.ingr-rows { display: flex; flex-direction: column; gap: 6px; }
+.ingr-row { display: flex; gap: 6px; align-items: center; }
+.ingr-row input.name { flex: 1.6; }
+.ingr-row input.qty { flex: 1; }
+.ingr-row .remove-btn { width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; color: var(--text-tertiary); cursor: pointer; border-radius: 6px; flex-shrink: 0; }
+.ingr-row .remove-btn:hover { background: var(--bg-secondary); color: var(--accent); }
+.add-ingr-btn { font-size: 12px; color: var(--sage-deep); cursor: pointer; padding: 6px 0; display: inline-flex; align-items: center; gap: 4px; margin-top: 6px; }
+.add-ingr-btn:hover { color: var(--sage); }
+.modal-foot { padding: 12px 20px 18px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+
+.confirm-modal { padding: 22px 24px; text-align: center; width: 320px; }
+.confirm-modal-icon { width: 44px; height: 44px; margin: 0 auto 10px; background: var(--accent-light); color: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+.confirm-modal h3 { font-size: 15px; font-weight: 500; margin-bottom: 4px; }
+.confirm-modal p { font-size: 13px; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.5; }
+.confirm-modal-btns { display: flex; gap: 8px; justify-content: center; }
+
+.btn { padding: 8px 16px; border-radius: 9px; font-size: 13px; cursor: pointer; border: 0.5px solid var(--border-tertiary); transition: all 0.15s; background: var(--bg-primary); color: var(--text-primary); display: inline-flex; align-items: center; gap: 5px; font-family: inherit; }
+.btn:hover { background: var(--bg-secondary); }
+.btn.primary { background: var(--sage); color: #fff; border-color: var(--sage); }
+.btn.primary:hover { background: var(--sage-deep); border-color: var(--sage-deep); }
+.btn.danger { color: var(--accent); border-color: transparent; }
+.btn.danger:hover { background: var(--accent-light); }
+.btn.danger-solid { background: var(--accent); color: #fff; border-color: var(--accent); }
+.btn.danger-solid:hover { background: #a86a48; border-color: #a86a48; }
+.btn.sm { padding: 6px 12px; font-size: 12px; }
+
+.action-bar { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+
+.saved-list { display: flex; flex-direction: column; gap: 8px; }
+.saved-card { border: 0.5px solid var(--border-tertiary); border-radius: var(--radius); padding: 14px 16px; background: var(--bg-primary); display: flex; align-items: center; gap: 14px; transition: all 0.15s; }
+.saved-card:hover { border-color: var(--sage); }
+.saved-mini { display: flex; flex-direction: column; gap: 3px; flex-shrink: 0; cursor: pointer; }
+.saved-info { flex: 1; min-width: 0; cursor: pointer; }
+.saved-title { font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.saved-label-tag { font-size: 11px; padding: 2px 8px; border-radius: 12px; background: var(--plum-light); color: var(--plum); font-weight: 500; }
+.saved-dishes { font-size: 12px; color: var(--text-secondary); margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.saved-meta { font-size: 11px; color: var(--text-tertiary); margin-top: 4px; display: flex; gap: 10px; }
+.saved-actions { display: flex; gap: 4px; flex-shrink: 0; }
+
+.confirm-card { background: var(--sage-light); border-radius: var(--radius); padding: 18px; margin-bottom: 16px; }
+.confirm-title { font-size: 15px; font-weight: 500; display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+.confirm-sub { font-size: 12px; color: var(--text-secondary); }
+.final-review { background: var(--bg-primary); border: 0.5px solid var(--border-tertiary); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
+
+.day-header { background: linear-gradient(135deg, var(--sage-light) 0%, #f0e8e0 100%); border-radius: var(--radius); padding: 16px 18px; margin-bottom: 16px; display: flex; align-items: center; gap: 12px; }
+.day-header.upcoming { background: linear-gradient(135deg, var(--plum-light) 0%, #f0e8e8 100%); }
+.day-header-icon { width: 40px; height: 40px; background: #fff; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--accent); font-size: 20px; flex-shrink: 0; }
+.day-header.upcoming .day-header-icon { color: var(--plum); }
+.day-header-text { flex: 1; min-width: 0; }
+.day-date { font-size: 14px; color: var(--sage-deep); font-weight: 500; }
+.day-header.upcoming .day-date { color: var(--plum); }
+.day-greeting { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+.day-back { font-size: 12px; color: var(--text-secondary); cursor: pointer; padding: 4px 8px; border-radius: 6px; display: flex; align-items: center; gap: 4px; }
+.day-back:hover { background: rgba(255,255,255,0.5); color: var(--text-primary); }
+
+.bento-folder { border: 0.5px solid var(--border-tertiary); border-radius: var(--radius); background: var(--bg-primary); margin-bottom: 10px; overflow: hidden; }
+.bento-folder.expanded { border-color: var(--sage-mid); }
+.bento-fold-head { padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: background 0.15s; }
+.bento-fold-head:hover { background: var(--sage-light); }
+.bento-folder.expanded .bento-fold-head { border-bottom: 0.5px dashed var(--border-tertiary); background: var(--sage-light); }
+.bento-fold-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.bento-avatar { width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-weight: 500; font-size: 14px; color: #fff; }
+.bento-fold-info { min-width: 0; }
+.bento-fold-name { font-size: 14px; font-weight: 500; }
+.bento-fold-meta { font-size: 12px; color: var(--text-secondary); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 280px; }
+.bento-fold-chevron { color: var(--text-tertiary); transition: transform 0.2s; }
+.bento-folder.expanded .bento-fold-chevron { transform: rotate(90deg); color: var(--sage); }
+.bento-fold-body { padding: 14px 16px 16px; display: none; }
+.bento-folder.expanded .bento-fold-body { display: block; }
+
+.layer-divider { font-size: 11px; color: var(--text-tertiary); padding: 8px 0 4px; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; text-transform: uppercase; font-weight: 500; }
+
+.ingr-section { margin-bottom: 10px; background: var(--bg-secondary); border-radius: 10px; padding: 12px 14px; }
+.ingr-dish-head { font-size: 13px; font-weight: 500; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+.ingr-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.ingr-list { display: flex; flex-direction: column; gap: 5px; }
+.ingr-item { display: flex; align-items: center; gap: 10px; font-size: 13px; padding: 4px 0; }
+.ingr-item input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--sage); flex-shrink: 0; }
+.ingr-item .ing-name { flex: 1; }
+.ingr-item .ing-qty { font-size: 12px; color: var(--text-secondary); }
+.ingr-item.done .ing-name, .ingr-item.done .ing-qty { color: var(--text-tertiary); text-decoration: line-through; }
+
+.empty-card { background: var(--sage-light); border-radius: var(--radius); padding: 28px 20px; text-align: center; margin-bottom: 16px; }
+.empty-icon { font-size: 38px; color: var(--sage); margin-bottom: 10px; }
+.empty-title { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+.empty-text { font-size: 13px; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.5; }
+
+.day-card { border: 0.5px solid var(--border-tertiary); border-radius: var(--radius); padding: 14px 16px; background: var(--bg-primary); display: flex; align-items: center; gap: 12px; margin-bottom: 8px; cursor: pointer; transition: all 0.15s; }
+.day-card:hover { border-color: var(--sage); background: var(--sage-light); }
+.day-card-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; background: var(--plum-light); color: var(--plum); }
+.day-card-info { flex: 1; min-width: 0; }
+.day-card-title { font-size: 13px; font-weight: 500; }
+.day-card-sub { font-size: 12px; color: var(--text-secondary); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.day-card-bentos { display: flex; gap: 4px; margin-top: 4px; }
+.bento-pill { font-size: 10px; padding: 2px 7px; border-radius: 10px; background: var(--bg-secondary); color: var(--text-secondary); }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="topbar">
+    <!-- LOGO: rice ball O integrated with "bento" text -->
+    <div class="logo-lockup">
+      <svg width="28" height="28" viewBox="0 0 80 80" style="margin-bottom: -4px; margin-right: -3px;">
+        <g transform="rotate(-4 40 40)">
+          <path d="M 40 14 C 54 14 62 28 62 44 C 62 56 56 62 50 62 L 30 62 C 24 62 18 56 18 44 C 18 28 26 14 40 14 Z" fill="#fafaf6" stroke="#3a3a36" stroke-width="2.5" stroke-linejoin="round"/>
+          <path d="M 28 46 Q 28 44 30 44 L 50 44 Q 52 44 52 46 L 47 60 Q 46 62 44 62 L 36 62 Q 34 62 33 60 Z" fill="#3a3a36"/>
+          <circle cx="32" cy="32" r="2.2" fill="#3a3a36"/>
+          <circle cx="44" cy="32" r="2.2" fill="#3a3a36"/>
+          <ellipse cx="26" cy="35" rx="3" ry="2.4" fill="#f4a78a" opacity="0.85"/>
+          <ellipse cx="50" cy="35" rx="3" ry="2.4" fill="#f4a78a" opacity="0.85"/>
+          <path d="M 35 35 Q 38 37 41 35" stroke="#3a3a36" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+        </g>
+      </svg>
+      <span>bento</span>
+    </div>
+    <div class="nav-tabs">
+      <div class="nav-tab active" onclick="switchTab('planner')"><i class="ti ti-edit" aria-hidden="true"></i>Plan</div>
+      <div class="nav-tab" onclick="switchTab('saved')"><i class="ti ti-bookmark" aria-hidden="true"></i>Saved</div>
+      <div class="nav-tab" onclick="switchTab('morning')"><i class="ti ti-sun" aria-hidden="true"></i>Morning</div>
+    </div>
+  </div>
+
+  <div id="screen-planner" class="screen active">
+    <div id="step-layout">
+      <div class="step-indicator">
+        <div class="step active"><div class="step-dot">1</div> Layout</div>
+        <div class="step-line"></div>
+        <div class="step"><div class="step-dot">2</div> Dishes</div>
+        <div class="step-line"></div>
+        <div class="step"><div class="step-dot">3</div> Review</div>
+        <div class="step-line"></div>
+        <div class="step"><div class="step-dot">4</div> Save</div>
+      </div>
+      <div class="section-label"><i class="ti ti-stack-2"></i>Layers</div>
+      <div class="layer-stack" id="layer-stack"></div>
+      <button class="add-layer-btn" onclick="addLayer()"><i class="ti ti-plus"></i>Add another layer</button>
+      <div class="action-bar" style="margin-top: 16px;">
+        <span style="font-size:12px; color: var(--text-tertiary); display:flex; align-items:center; gap:5px"><i class="ti ti-info-circle"></i>You can resize sections in the next step</span>
+        <button class="btn primary" onclick="goStep('dishes')">Next: Add dishes <i class="ti ti-arrow-right"></i></button>
+      </div>
+    </div>
+
+    <div id="step-dishes" style="display:none">
+      <div class="step-indicator">
+        <div class="step done"><div class="step-dot"><i class="ti ti-check" style="font-size:11px"></i></div> Layout</div>
+        <div class="step-line"></div>
+        <div class="step active"><div class="step-dot">2</div> Dishes</div>
+        <div class="step-line"></div>
+        <div class="step"><div class="step-dot">3</div> Review</div>
+        <div class="step-line"></div>
+        <div class="step"><div class="step-dot">4</div> Save</div>
+      </div>
+      <div class="drag-hint"><i class="ti ti-arrows-horizontal"></i>Tap a section to add a dish · drag dividers to resize</div>
+      <div id="dishes-content"></div>
+      <div class="action-bar" style="margin-top: 8px;">
+        <button class="btn sm" onclick="goStep('layout')"><i class="ti ti-arrow-left"></i>Back</button>
+        <button class="btn primary" onclick="goStep('review')">Review bento <i class="ti ti-arrow-right"></i></button>
+      </div>
+    </div>
+
+    <div id="step-review" style="display:none">
+      <div class="step-indicator">
+        <div class="step done"><div class="step-dot"><i class="ti ti-check" style="font-size:11px"></i></div> Layout</div>
+        <div class="step-line"></div>
+        <div class="step done"><div class="step-dot"><i class="ti ti-check" style="font-size:11px"></i></div> Dishes</div>
+        <div class="step-line"></div>
+        <div class="step active"><div class="step-dot">3</div> Review</div>
+        <div class="step-line"></div>
+        <div class="step"><div class="step-dot">4</div> Save</div>
+      </div>
+      <div class="confirm-card">
+        <div class="confirm-title"><i class="ti ti-bowl"></i>Looking good!</div>
+        <div class="confirm-sub">Take one last look before scheduling.</div>
+      </div>
+      <div id="review-layers"></div>
+      <div id="review-ingredients" style="margin-top: 10px;"></div>
+      <div class="action-bar" style="margin-top: 14px;">
+        <button class="btn sm" onclick="goStep('dishes')"><i class="ti ti-arrow-left"></i>Edit</button>
+        <button class="btn primary" onclick="goStep('schedule')">Looks good <i class="ti ti-arrow-right"></i></button>
+      </div>
+    </div>
+
+    <div id="step-schedule" style="display:none">
+      <div class="step-indicator">
+        <div class="step done"><div class="step-dot"><i class="ti ti-check" style="font-size:11px"></i></div> Layout</div>
+        <div class="step-line"></div>
+        <div class="step done"><div class="step-dot"><i class="ti ti-check" style="font-size:11px"></i></div> Dishes</div>
+        <div class="step-line"></div>
+        <div class="step done"><div class="step-dot"><i class="ti ti-check" style="font-size:11px"></i></div> Review</div>
+        <div class="step-line"></div>
+        <div class="step active"><div class="step-dot">4</div> Save</div>
+      </div>
+      <div class="confirm-card">
+        <div class="confirm-title"><i class="ti ti-calendar-event"></i>When is this for?</div>
+        <div class="confirm-sub">Pick the date this bento will be packed for.</div>
+      </div>
+      <div style="background: var(--bg-primary); border: 0.5px solid var(--border-tertiary); border-radius: var(--radius); padding: 16px; margin-bottom: 12px;">
+        <div class="field"><label>Date</label><input type="date" id="plan-date" /></div>
+        <div class="field"><label>Whose bento? <span style="color:var(--text-tertiary); font-weight:400">(optional — useful if multiple kids)</span></label><input type="text" id="plan-label" placeholder="e.g. Mia, Leo, or just 'school'" /></div>
+      </div>
+      <div class="action-bar">
+        <button class="btn sm" onclick="goStep('review')"><i class="ti ti-arrow-left"></i>Back</button>
+        <button class="btn primary" onclick="savePlan()"><i class="ti ti-check"></i>Save plan</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="screen-saved" class="screen">
+    <div class="section-label"><i class="ti ti-bookmark"></i>Your bentos</div>
+    <div class="saved-list" id="saved-list"></div>
+    <div style="margin-top: 12px;">
+      <button class="btn" style="width:100%; justify-content:center" onclick="newPlan()"><i class="ti ti-plus"></i>Plan a new bento</button>
+    </div>
+  </div>
+
+  <div id="screen-morning" class="screen">
+    <div id="morning-content"></div>
+  </div>
+
+  <div id="screen-day" class="screen">
+    <div id="day-content"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="dish-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-head-icon"><i class="ti ti-tools-kitchen-2"></i></div>
+      <div>
+        <div class="sub" id="modal-section-name">Section</div>
+        <h3>Add a dish</h3>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div class="field-row">
+        <div class="field" style="flex:1.5"><label>Dish name</label><input type="text" id="dish-name" placeholder="e.g. Tamagoyaki" /></div>
+        <div class="field" style="flex:1"><label>Section type</label>
+          <select id="dish-section-type">
+            <option value="Main">Main</option><option value="Protein">Protein</option><option value="Veg">Veg</option>
+            <option value="Fruit">Fruit</option><option value="Snack">Snack</option><option value="Treat">Treat</option>
+            <option value="Dip">Dip</option><option value="Side">Side</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Ingredients <span style="color:var(--text-tertiary); font-weight:400">(optional)</span></label>
+        <div class="ingr-rows" id="ingr-rows"></div>
+        <div class="add-ingr-btn" onclick="addIngrRow()"><i class="ti ti-plus"></i>Add ingredient</div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <div><button class="btn sm danger" id="delete-btn" onclick="deleteDish()" style="display:none"><i class="ti ti-trash"></i>Remove</button></div>
+      <div style="display:flex; gap:6px">
+        <button class="btn sm" onclick="closeModal()">Cancel</button>
+        <button class="btn primary sm" onclick="saveDish()"><i class="ti ti-check"></i>Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="confirm-modal-overlay">
+  <div class="modal confirm-modal">
+    <div class="confirm-modal-icon"><i class="ti ti-trash"></i></div>
+    <h3 id="confirm-title">Delete this bento?</h3>
+    <p id="confirm-text">This can't be undone.</p>
+    <div class="confirm-modal-btns">
+      <button class="btn sm" onclick="closeConfirm()">Cancel</button>
+      <button class="btn danger-solid sm" id="confirm-action-btn"><i class="ti ti-trash"></i>Delete</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const layoutTemplates = [
+  { name: '2-section', desc: 'Left & right',
+    sections: [
+      {label:'Main', x:0, y:0, w:0.55, h:1, type:'Main'},
+      {label:'Side', x:0.55, y:0, w:0.45, h:1, type:'Side'}
+    ],
+    dividers: [{type:'v', between:[0,1], x:0.55}]
+  },
+  { name: '3-section', desc: '1 large + 2 stacked',
+    sections: [
+      {label:'Main', x:0, y:0, w:0.55, h:1, type:'Main'},
+      {label:'Protein', x:0.55, y:0, w:0.45, h:0.5, type:'Protein'},
+      {label:'Fruit', x:0.55, y:0.5, w:0.45, h:0.5, type:'Fruit'}
+    ],
+    dividers: [
+      {type:'v', between:[0,[1,2]], x:0.55},
+      {type:'h', between:[1,2], y:0.5, xMin:0.55, xMax:1}
+    ]
+  },
+  { name: 'Classic 4', desc: '2x2 grid',
+    sections: [
+      {label:'Main', x:0, y:0, w:0.55, h:0.55, type:'Main'},
+      {label:'Side', x:0.55, y:0, w:0.45, h:0.55, type:'Side'},
+      {label:'Snack', x:0, y:0.55, w:0.5, h:0.45, type:'Snack'},
+      {label:'Fruit', x:0.5, y:0.55, w:0.5, h:0.45, type:'Fruit'}
+    ],
+    dividers: [
+      {type:'v', between:[0,1], x:0.55, yMin:0, yMax:0.55},
+      {type:'v', between:[2,3], x:0.5, yMin:0.55, yMax:1},
+      {type:'h', between:[[0,1],[2,3]], y:0.55}
+    ]
+  },
+  { name: 'Bentgo 5', desc: 'Center + 4 around',
+    sections: [
+      {label:'Main', x:0, y:0, w:0.55, h:1, type:'Main'},
+      {label:'Veg', x:0.55, y:0, w:0.45, h:0.4, type:'Veg'},
+      {label:'Center', x:0.55, y:0.4, w:0.225, h:0.3, type:'Snack', round:true},
+      {label:'Fruit', x:0.775, y:0.4, w:0.225, h:0.3, type:'Fruit'},
+      {label:'Treat', x:0.55, y:0.7, w:0.45, h:0.3, type:'Treat'}
+    ],
+    dividers: []
+  },
+  { name: '4-section', desc: '1 big + 3 small',
+    sections: [
+      {label:'Main', x:0, y:0, w:0.6, h:1, type:'Main'},
+      {label:'Protein', x:0.6, y:0, w:0.4, h:0.34, type:'Protein'},
+      {label:'Veg', x:0.6, y:0.34, w:0.4, h:0.33, type:'Veg'},
+      {label:'Fruit', x:0.6, y:0.67, w:0.4, h:0.33, type:'Fruit'}
+    ],
+    dividers: [{type:'v', between:[0,[1,2,3]], x:0.6}]
+  },
+  { name: 'Single tray', desc: 'No dividers',
+    sections: [{label:'Main', x:0, y:0, w:1, h:1, type:'Main'}],
+    dividers: []
+  }
+];
+
+function todayIso() { return new Date().toISOString().slice(0,10); }
+function addDays(iso, n) { const d = new Date(iso + 'T00:00:00'); d.setDate(d.getDate() + n); return d.toISOString().slice(0,10); }
+function fmtDate(iso) { return new Date(iso + 'T00:00:00').toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'}); }
+function fmtDateLong(iso) { return new Date(iso + 'T00:00:00').toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric'}); }
+
+const TODAY = todayIso();
+
+let state = {
+  layers: [makeLayer(0)],
+  plans: [
+    { id: 1, isoDate: TODAY, label: 'Mia',
+      layers: [{ templateIdx: 3, sections: cloneSections(layoutTemplates[3].sections), dishes: {
+        '0': {name:'Meatballs', section:'Main', ingredients:[{name:'Ground beef',qty:'200g'},{name:'Breadcrumbs',qty:'1/4 cup'},{name:'Egg',qty:'1'},{name:'BBQ sauce',qty:'2 tbsp'}]},
+        '1': {name:'Broccoli', section:'Veg', ingredients:[{name:'Broccoli florets',qty:'1 cup'}]},
+        '2': {name:'Cashews', section:'Snack', ingredients:[]},
+        '3': {name:'Raspberries', section:'Fruit', ingredients:[{name:'Raspberries',qty:'1/2 cup'}]},
+        '4': {name:'Sweet potato', section:'Treat', ingredients:[{name:'Sweet potato',qty:'1 small'},{name:'Olive oil',qty:'1 tsp'}]}
+      } }]
+    },
+    { id: 2, isoDate: TODAY, label: 'Leo',
+      layers: [{ templateIdx: 1, sections: cloneSections(layoutTemplates[1].sections), dishes: {
+        '0': {name:'Onigiri', section:'Main', ingredients:[{name:'Cooked rice',qty:'1 cup'},{name:'Nori',qty:'1 sheet'},{name:'Salmon flakes',qty:'2 tbsp'}]},
+        '1': {name:'Edamame', section:'Protein', ingredients:[{name:'Frozen edamame',qty:'80g'}]},
+        '2': {name:'Grapes', section:'Fruit', ingredients:[]}
+      } }]
+    },
+    { id: 3, isoDate: addDays(TODAY, 2), label: 'Mia',
+      layers: [{ templateIdx: 2, sections: cloneSections(layoutTemplates[2].sections), dishes: {
+        '0': {name:'Tamagoyaki', section:'Main', ingredients:[{name:'Eggs',qty:'3'},{name:'Soy sauce',qty:'1 tsp'}]},
+        '1': {name:'Crackers', section:'Snack', ingredients:[]},
+        '2': {name:'Strawberries', section:'Fruit', ingredients:[{name:'Strawberries',qty:'5'}]},
+        '3': {name:'Cookie', section:'Treat', ingredients:[]}
+      } }]
+    },
+    { id: 4, isoDate: addDays(TODAY, 2), label: 'Leo',
+      layers: [{ templateIdx: 0, sections: cloneSections(layoutTemplates[0].sections), dishes: {
+        '0': {name:'PB&J', section:'Main', ingredients:[{name:'Bread',qty:'2 slices'},{name:'PB',qty:'2 tbsp'}]},
+        '1': {name:'Apple', section:'Fruit', ingredients:[]}
+      } }]
+    },
+    { id: 5, isoDate: addDays(TODAY, 5), label: '',
+      layers: [{ templateIdx: 5, sections: cloneSections(layoutTemplates[5].sections), dishes: {
+        '0': {name:'Pasta salad', section:'Main', ingredients:[{name:'Pasta',qty:'1 cup'},{name:'Cherry tomatoes',qty:'5'}]}
+      } }]
+    }
+  ],
+  expandedBentos: new Set()
+};
+
+let editingCell = null;
+let editingIngredients = [];
+let pendingConfirm = null;
+
+function cloneSections(s) { return s.map(x => ({...x})); }
+function makeLayer(t) { return { templateIdx: t, sections: cloneSections(layoutTemplates[t].sections), dishes: {} }; }
+
+function renderLayerStack() {
+  const stack = document.getElementById('layer-stack');
+  stack.innerHTML = '';
+  state.layers.forEach((layer, li) => {
+    const block = document.createElement('div');
+    block.className = 'layer-block';
+    let head = '<div class="layer-head"><div class="layer-title"><i class="ti ti-stack"></i>Layer ' + (li+1) + '</div>';
+    head += '<div>';
+    if(state.layers.length > 1) head += '<button class="icon-btn" onclick="removeLayer(' + li + ')" title="Remove"><i class="ti ti-trash"></i></button>';
+    head += '</div></div>';
+    let body = '<div class="layer-body"><div class="layout-grid">';
+    layoutTemplates.forEach((tmpl, ti) => {
+      body += '<div class="layout-card ' + (layer.templateIdx === ti ? 'selected' : '') + '" onclick="selectTemplate(' + li + ',' + ti + ')">';
+      body += renderLayoutSvg(tmpl);
+      body += '<div class="label"><div class="label-name">' + tmpl.name + '</div>' + tmpl.desc + '</div>';
+      body += '</div>';
+    });
+    body += '</div></div>';
+    block.innerHTML = head + body;
+    stack.appendChild(block);
+  });
+}
+
+function renderLayoutSvg(tmpl) {
+  const W = 110, H = 56, PAD = 2;
+  let svg = '<svg class="layout-svg" viewBox="0 0 ' + W + ' ' + H + '">';
+  svg += '<rect x="0.5" y="0.5" width="' + (W-1) + '" height="' + (H-1) + '" rx="6" fill="#f7f4ef" stroke="#d8d0c4"/>';
+  tmpl.sections.forEach(s => {
+    const x = s.x * W + PAD, y = s.y * H + PAD;
+    const w = s.w * W - PAD*2, h = s.h * H - PAD*2;
+    if(s.round) {
+      svg += '<circle cx="' + (x + w/2) + '" cy="' + (y + h/2) + '" r="' + (Math.min(w, h) / 2) + '" fill="#b8d0c5" opacity="0.7"/>';
+    } else {
+      svg += '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="3" fill="#b8d0c5" opacity="0.6"/>';
+    }
+  });
+  svg += '</svg>';
+  return svg;
+}
+
+function addLayer() { state.layers.push(makeLayer(0)); renderLayerStack(); }
+function removeLayer(idx) { state.layers.splice(idx, 1); renderLayerStack(); }
+function selectTemplate(layerIdx, tmplIdx) {
+  state.layers[layerIdx].templateIdx = tmplIdx;
+  state.layers[layerIdx].sections = cloneSections(layoutTemplates[tmplIdx].sections);
+  state.layers[layerIdx].dishes = {};
+  renderLayerStack();
+}
+
+function goStep(step) {
+  ['layout','dishes','review','schedule'].forEach(s => {
+    const el = document.getElementById('step-' + s);
+    if(el) el.style.display = s === step ? 'block' : 'none';
+  });
+  if(step === 'dishes') renderDishesContent();
+  if(step === 'review') renderReview();
+  if(step === 'schedule') {
+    document.getElementById('plan-date').value = addDays(TODAY, 1);
+    document.getElementById('plan-label').value = '';
+  }
+}
+
+function renderDishesContent() {
+  const container = document.getElementById('dishes-content');
+  container.innerHTML = '';
+  state.layers.forEach((layer, li) => {
+    if(state.layers.length > 1) {
+      const div = document.createElement('div');
+      div.className = 'layer-divider';
+      div.innerHTML = '<i class="ti ti-stack"></i>Layer ' + (li+1);
+      container.appendChild(div);
+    }
+    const wrap = document.createElement('div');
+    wrap.className = 'bento-svg-wrap';
+    wrap.style.marginBottom = '12px';
+    wrap.appendChild(renderInteractiveBento(layer, li, true));
+    container.appendChild(wrap);
+  });
+}
+
+function renderInteractiveBento(layer, layerIdx, editable) {
+  const W = 600, H = 280, PAD = 6;
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(svgNS, 'svg');
+  svg.setAttribute('class', 'bento-svg');
+  svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+
+  const boxBg = document.createElementNS(svgNS, 'rect');
+  boxBg.setAttribute('x', 1); boxBg.setAttribute('y', 1);
+  boxBg.setAttribute('width', W-2); boxBg.setAttribute('height', H-2);
+  boxBg.setAttribute('rx', 14); boxBg.setAttribute('fill', '#f7f4ef'); boxBg.setAttribute('stroke', '#d8d0c4'); boxBg.setAttribute('stroke-width', 1);
+  svg.appendChild(boxBg);
+
+  const cellColors = ['#e8f0ec','#f5ede6','#f0e8f5','#e8eef5','#f0ece3','#e3eceb','#ede3ec','#e3e9f0'];
+
+  layer.sections.forEach((s, si) => {
+    const x = s.x * W + PAD, y = s.y * H + PAD;
+    const w = s.w * W - PAD*2, h = s.h * H - PAD*2;
+    const dish = layer.dishes[String(si)];
+    const isRound = s.round;
+    let cell;
+    if(isRound) {
+      cell = document.createElementNS(svgNS, 'circle');
+      cell.setAttribute('cx', x + w/2); cell.setAttribute('cy', y + h/2);
+      cell.setAttribute('r', Math.min(w, h) / 2);
+    } else {
+      cell = document.createElementNS(svgNS, 'rect');
+      cell.setAttribute('x', x); cell.setAttribute('y', y);
+      cell.setAttribute('width', w); cell.setAttribute('height', h);
+      cell.setAttribute('rx', 10);
+    }
+    cell.setAttribute('fill', dish ? cellColors[si % cellColors.length] : '#fafaf6');
+    cell.setAttribute('stroke', dish ? '#b8d0c5' : '#e0d8c8');
+    cell.setAttribute('stroke-width', 1);
+    cell.setAttribute('stroke-dasharray', dish ? '0' : '4,3');
+    if(editable) { cell.style.cursor = 'pointer'; cell.addEventListener('click', () => openModal(layerIdx, si)); }
+    svg.appendChild(cell);
+
+    const labelText = document.createElementNS(svgNS, 'text');
+    if(isRound) { labelText.setAttribute('x', x + w/2); labelText.setAttribute('y', y + h/2 - h/5); labelText.setAttribute('text-anchor', 'middle'); }
+    else { labelText.setAttribute('x', x + 8); labelText.setAttribute('y', y + 16); }
+    labelText.setAttribute('font-size', 10); labelText.setAttribute('fill', '#9a9890'); labelText.setAttribute('letter-spacing', '0.5');
+    labelText.textContent = (dish && dish.section ? dish.section : s.label).toUpperCase();
+    if(editable) labelText.style.pointerEvents = 'none';
+    svg.appendChild(labelText);
+
+    if(dish) {
+      const dishText = document.createElementNS(svgNS, 'text');
+      dishText.setAttribute('x', x + w/2); dishText.setAttribute('y', y + h/2 + (isRound ? 6 : 5));
+      dishText.setAttribute('font-size', isRound ? 11 : 14);
+      dishText.setAttribute('fill', '#2a2a28'); dishText.setAttribute('font-weight', 500);
+      dishText.setAttribute('text-anchor', 'middle');
+      const maxChars = Math.floor(w / (isRound ? 6 : 8));
+      dishText.textContent = dish.name.length > maxChars ? dish.name.slice(0, maxChars-1) + '…' : dish.name;
+      if(editable) dishText.style.pointerEvents = 'none';
+      svg.appendChild(dishText);
+    } else if(editable) {
+      const plus = document.createElementNS(svgNS, 'text');
+      plus.setAttribute('x', x + w/2); plus.setAttribute('y', y + h/2 + 8);
+      plus.setAttribute('font-size', 22); plus.setAttribute('fill', '#b8d0c5'); plus.setAttribute('text-anchor', 'middle');
+      plus.setAttribute('font-weight', 300);
+      plus.textContent = '+';
+      plus.style.pointerEvents = 'none';
+      svg.appendChild(plus);
+    }
+  });
+
+  if(editable) {
+    const tmpl = layoutTemplates[layer.templateIdx];
+    tmpl.dividers.forEach((divDef, di) => addDivider(svg, layer, layerIdx, divDef, di, W, H));
+  }
+  return svg;
+}
+
+function addDivider(svg, layer, layerIdx, divDef, divIdx, W, H) {
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const handle = document.createElementNS(svgNS, 'rect');
+  function getPos() {
+    if(divDef.type === 'v') {
+      const i = Array.isArray(divDef.between[0]) ? divDef.between[0][0] : divDef.between[0];
+      return layer.sections[i].x + layer.sections[i].w;
+    } else {
+      const i = Array.isArray(divDef.between[0]) ? divDef.between[0][0] : divDef.between[0];
+      return layer.sections[i].y + layer.sections[i].h;
+    }
+  }
+  function place() {
+    if(divDef.type === 'v') {
+      const x = getPos() * W;
+      const yMin = (divDef.yMin !== undefined ? divDef.yMin : 0) * H;
+      const yMax = (divDef.yMax !== undefined ? divDef.yMax : 1) * H;
+      handle.setAttribute('x', x - 4); handle.setAttribute('y', yMin + (yMax-yMin)/2 - 16);
+      handle.setAttribute('width', 8); handle.setAttribute('height', 32);
+    } else {
+      const y = getPos() * H;
+      const xMin = (divDef.xMin !== undefined ? divDef.xMin : 0) * W;
+      const xMax = (divDef.xMax !== undefined ? divDef.xMax : 1) * W;
+      handle.setAttribute('x', xMin + (xMax-xMin)/2 - 16); handle.setAttribute('y', y - 4);
+      handle.setAttribute('width', 32); handle.setAttribute('height', 8);
+    }
+  }
+  handle.setAttribute('rx', 3);
+  handle.setAttribute('fill', '#b8d0c5');
+  handle.setAttribute('stroke', '#7a9e8e');
+  handle.setAttribute('stroke-width', 0.5);
+  handle.style.cursor = divDef.type === 'v' ? 'col-resize' : 'row-resize';
+  handle.addEventListener('mouseenter', () => handle.setAttribute('fill', '#7a9e8e'));
+  handle.addEventListener('mouseleave', () => handle.setAttribute('fill', '#b8d0c5'));
+  place();
+  svg.appendChild(handle);
+
+  function startDrag(e) {
+    e.preventDefault(); e.stopPropagation();
+    const sp = e.touches ? {x: e.touches[0].clientX, y: e.touches[0].clientY} : {x: e.clientX, y: e.clientY};
+    const startPos = getPos();
+    const r = svg.getBoundingClientRect();
+    function onMove(ev) {
+      const p = ev.touches ? {x: ev.touches[0].clientX, y: ev.touches[0].clientY} : {x: ev.clientX, y: ev.clientY};
+      let np = divDef.type === 'v' ? startPos + ((p.x - sp.x) / r.width) : startPos + ((p.y - sp.y) / r.height);
+      np = Math.max(0.15, Math.min(0.85, np));
+      applyDivider(layer, divDef, np);
+      const wrap = document.querySelectorAll('#dishes-content .bento-svg-wrap')[layerIdx];
+      wrap.innerHTML = ''; wrap.appendChild(renderInteractiveBento(layer, layerIdx, true));
+    }
+    function onEnd() {
+      document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onEnd);
+      document.removeEventListener('touchmove', onMove); document.removeEventListener('touchend', onEnd);
+    }
+    document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onEnd);
+    document.addEventListener('touchmove', onMove, {passive:false}); document.addEventListener('touchend', onEnd);
+  }
+  handle.addEventListener('mousedown', startDrag);
+  handle.addEventListener('touchstart', startDrag, {passive:false});
+}
+
+function applyDivider(layer, divDef, np) {
+  if(divDef.type === 'v') {
+    const L = Array.isArray(divDef.between[0]) ? divDef.between[0] : [divDef.between[0]];
+    const R = Array.isArray(divDef.between[1]) ? divDef.between[1] : [divDef.between[1]];
+    L.forEach(i => { const s = layer.sections[i]; s.w = np - s.x; });
+    R.forEach(i => { const s = layer.sections[i]; const r = s.x + s.w; s.x = np; s.w = r - np; });
+  } else {
+    const T = Array.isArray(divDef.between[0]) ? divDef.between[0] : [divDef.between[0]];
+    const B = Array.isArray(divDef.between[1]) ? divDef.between[1] : [divDef.between[1]];
+    T.forEach(i => { const s = layer.sections[i]; s.h = np - s.y; });
+    B.forEach(i => { const s = layer.sections[i]; const b = s.y + s.h; s.y = np; s.h = b - np; });
+  }
+}
+
+function openModal(layerIdx, sectionIdx) {
+  editingCell = {layerIdx, sectionIdx};
+  const layer = state.layers[layerIdx];
+  const section = layer.sections[sectionIdx];
+  const dish = layer.dishes[String(sectionIdx)];
+  document.getElementById('modal-section-name').textContent = 'Layer ' + (layerIdx+1) + ' · ' + (dish && dish.section ? dish.section : section.label).toUpperCase();
+  document.getElementById('dish-name').value = dish ? dish.name : '';
+  document.getElementById('dish-section-type').value = dish && dish.section ? dish.section : (section.type || section.label);
+  editingIngredients = dish && dish.ingredients.length ? JSON.parse(JSON.stringify(dish.ingredients)) : [{name:'',qty:''},{name:'',qty:''},{name:'',qty:''}];
+  renderIngrRows();
+  document.getElementById('delete-btn').style.display = dish ? 'inline-flex' : 'none';
+  document.getElementById('dish-modal').classList.add('open');
+  setTimeout(() => document.getElementById('dish-name').focus(), 50);
+}
+
+function renderIngrRows() {
+  const c = document.getElementById('ingr-rows');
+  c.innerHTML = '';
+  editingIngredients.forEach((ing, i) => {
+    const r = document.createElement('div'); r.className = 'ingr-row';
+    r.innerHTML = '<input class="name" type="text" placeholder="Ingredient" value="' + escapeAttr(ing.name) + '" oninput="editingIngredients[' + i + '].name=this.value">' +
+      '<input class="qty" type="text" placeholder="Quantity" value="' + escapeAttr(ing.qty) + '" oninput="editingIngredients[' + i + '].qty=this.value">' +
+      '<div class="remove-btn" onclick="removeIngrRow(' + i + ')"><i class="ti ti-x"></i></div>';
+    c.appendChild(r);
+  });
+}
+
+function addIngrRow() { editingIngredients.push({name:'',qty:''}); renderIngrRows(); }
+function removeIngrRow(i) {
+  editingIngredients.splice(i, 1);
+  if(!editingIngredients.length) editingIngredients.push({name:'',qty:''});
+  renderIngrRows();
+}
+
+function closeModal() { document.getElementById('dish-modal').classList.remove('open'); editingCell = null; }
+
+function saveDish() {
+  const name = document.getElementById('dish-name').value.trim();
+  if(!name) { alert('Please enter a dish name'); return; }
+  const sectionType = document.getElementById('dish-section-type').value;
+  const layer = state.layers[editingCell.layerIdx];
+  const ingr = editingIngredients.filter(i => i.name.trim()).map(i => ({name: i.name.trim(), qty: i.qty.trim()}));
+  layer.dishes[String(editingCell.sectionIdx)] = { name, section: sectionType, ingredients: ingr };
+  closeModal();
+  renderDishesContent();
+}
+
+function deleteDish() {
+  const layer = state.layers[editingCell.layerIdx];
+  delete layer.dishes[String(editingCell.sectionIdx)];
+  closeModal();
+  renderDishesContent();
+}
+
+function openConfirm(title, text, onConfirm) {
+  document.getElementById('confirm-title').textContent = title;
+  document.getElementById('confirm-text').textContent = text;
+  pendingConfirm = onConfirm;
+  document.getElementById('confirm-action-btn').onclick = () => { if(pendingConfirm) pendingConfirm(); closeConfirm(); };
+  document.getElementById('confirm-modal-overlay').classList.add('open');
+}
+function closeConfirm() { document.getElementById('confirm-modal-overlay').classList.remove('open'); pendingConfirm = null; }
+
+function renderReview() {
+  const wrap = document.getElementById('review-layers');
+  wrap.innerHTML = '';
+  state.layers.forEach((layer, li) => {
+    if(state.layers.length > 1) {
+      const d = document.createElement('div'); d.className = 'layer-divider';
+      d.innerHTML = '<i class="ti ti-stack"></i>Layer ' + (li+1);
+      wrap.appendChild(d);
+    }
+    const card = document.createElement('div'); card.className = 'final-review';
+    card.appendChild(renderInteractiveBento(layer, li, false));
+    wrap.appendChild(card);
+  });
+  const ingEl = document.getElementById('review-ingredients');
+  const dishesWithIngr = collectDishes(state.layers).filter(d => d.ingredients.length);
+  ingEl.innerHTML = dishesWithIngr.length ?
+    '<div class="section-label" style="margin-top:12px"><i class="ti ti-list-check"></i>Ingredients you\'ll need</div>' +
+    dishesWithIngr.map((d, i) => renderIngrSection(d, i, false)).join('') : '';
+}
+
+function collectDishes(layers) {
+  const out = [];
+  layers.forEach((layer, li) => Object.values(layer.dishes).forEach(d => out.push({...d, layer: li})));
+  return out;
+}
+
+function renderIngrSection(dish, i, interactive) {
+  const colors = ['#7a9e8e','#c17f5a','#9e7ab8','#5a8ec1','#b89e5a'];
+  let h = '<div class="ingr-section">';
+  h += '<div class="ingr-dish-head"><div class="ingr-dot" style="background:' + colors[i%5] + '"></div>' + escapeHtml(dish.name) + '<span style="font-size:11px;color:var(--text-tertiary);font-weight:400;margin-left:6px">· ' + escapeHtml(dish.section || '') + '</span></div>';
+  h += '<div class="ingr-list">';
+  dish.ingredients.forEach(ing => {
+    h += '<div class="ingr-item">' + (interactive ? '<input type="checkbox" onchange="toggleIngr(this)">' : '<input type="checkbox" disabled>') +
+      '<div class="ing-name">' + escapeHtml(ing.name) + '</div><div class="ing-qty">' + escapeHtml(ing.qty) + '</div></div>';
+  });
+  h += '</div></div>';
+  return h;
+}
+
+function toggleIngr(cb) { cb.closest('.ingr-item').classList.toggle('done', cb.checked); }
+
+function savePlan() {
+  const date = document.getElementById('plan-date').value;
+  const label = document.getElementById('plan-label').value.trim();
+  if(!date) { alert('Please pick a date'); return; }
+  state.plans.unshift({ id: Date.now(), isoDate: date, label, layers: JSON.parse(JSON.stringify(state.layers)) });
+  alert('Bento saved for ' + fmtDate(date) + (label ? ' (' + label + ')' : '') + ' 🍱');
+  newPlan();
+  switchTab('saved');
+}
+
+function newPlan() {
+  state.layers = [makeLayer(0)];
+  renderLayerStack();
+  switchTab('planner');
+  goStep('layout');
+}
+
+function renderSaved() {
+  const el = document.getElementById('saved-list');
+  el.innerHTML = '';
+  if(!state.plans.length) {
+    el.innerHTML = '<div class="empty-card"><div class="empty-icon"><i class="ti ti-bookmark-off"></i></div><div class="empty-title">No saved bentos yet</div><div class="empty-text">Plan one and it\'ll show up here.</div></div>';
+    return;
+  }
+  const sorted = [...state.plans].sort((a,b) => b.isoDate.localeCompare(a.isoDate));
+  sorted.forEach(plan => {
+    const allDishes = collectDishes(plan.layers);
+    const dishNames = allDishes.map(d => d.name).join(' · ');
+    const card = document.createElement('div');
+    card.className = 'saved-card';
+    let mini = '<div class="saved-mini" onclick="loadPlan(' + plan.id + ')">';
+    plan.layers.forEach(layer => mini += renderMiniSvg(layoutTemplates[layer.templateIdx], 36, 24));
+    mini += '</div>';
+    let dateLabel = fmtDate(plan.isoDate);
+    if(plan.isoDate === TODAY) dateLabel = 'Today · ' + dateLabel;
+    else if(plan.isoDate === addDays(TODAY, 1)) dateLabel = 'Tomorrow · ' + dateLabel;
+    card.innerHTML = mini +
+      '<div class="saved-info" onclick="loadPlan(' + plan.id + ')">' +
+        '<div class="saved-title">' + dateLabel + (plan.label ? '<span class="saved-label-tag">' + escapeHtml(plan.label) + '</span>' : '') + '</div>' +
+        '<div class="saved-dishes">' + (dishNames || 'No dishes') + '</div>' +
+        '<div class="saved-meta">' +
+          '<span><i class="ti ti-stack" style="font-size:11px"></i> ' + plan.layers.length + ' layer' + (plan.layers.length>1?'s':'') + '</span>' +
+          '<span><i class="ti ti-tools-kitchen-2" style="font-size:11px"></i> ' + allDishes.length + ' dishes</span>' +
+        '</div>' +
+      '</div>' +
+      '<div class="saved-actions">' +
+        '<button class="icon-btn" onclick="confirmDelete(' + plan.id + ')" title="Delete"><i class="ti ti-trash"></i></button>' +
+      '</div>';
+    el.appendChild(card);
+  });
+}
+
+function confirmDelete(id) {
+  const plan = state.plans.find(p => p.id === id);
+  if(!plan) return;
+  const desc = (plan.label ? plan.label + "'s bento" : 'This bento') + ' for ' + fmtDate(plan.isoDate);
+  openConfirm('Delete this bento?', desc + ' will be permanently removed.', () => {
+    state.plans = state.plans.filter(p => p.id !== id);
+    renderSaved();
+  });
+}
+
+function renderMiniSvg(tmpl, w, h) {
+  let svg = '<svg width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h + '">';
+  svg += '<rect x="0.5" y="0.5" width="' + (w-1) + '" height="' + (h-1) + '" rx="3" fill="#f7f4ef" stroke="#d8d0c4"/>';
+  tmpl.sections.forEach(s => {
+    if(s.round) {
+      const cx = s.x*w + s.w*w/2, cy = s.y*h + s.h*h/2;
+      const r = Math.min(s.w*w, s.h*h)/2 - 1;
+      svg += '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="#b8d0c5" opacity="0.7"/>';
+    } else {
+      svg += '<rect x="' + (s.x*w + 1.5) + '" y="' + (s.y*h + 1.5) + '" width="' + (s.w*w - 3) + '" height="' + (s.h*h - 3) + '" rx="2" fill="#b8d0c5" opacity="0.7"/>';
+    }
+  });
+  svg += '</svg>';
+  return svg;
+}
+
+function loadPlan(id) {
+  const plan = state.plans.find(p => p.id === id);
+  if(!plan) return;
+  state.layers = JSON.parse(JSON.stringify(plan.layers));
+  renderLayerStack();
+  switchTab('planner');
+  goStep('dishes');
+}
+
+function avatarFor(label, idx) {
+  const colors = ['#7a9e8e','#c17f5a','#9e7ab8','#5a8ec1','#b89e5a'];
+  const initial = label ? label[0].toUpperCase() : '#';
+  return { color: colors[idx % colors.length], initial };
+}
+
+function renderBentoFolder(plan, planIdx, autoExpand) {
+  const allDishes = collectDishes(plan.layers);
+  const dishNames = allDishes.map(d => d.name).join(' · ');
+  const av = avatarFor(plan.label, planIdx);
+  const expanded = autoExpand || state.expandedBentos.has(plan.id);
+  let html = '<div class="bento-folder ' + (expanded ? 'expanded' : '') + '" id="folder-' + plan.id + '">';
+  html += '<div class="bento-fold-head" onclick="toggleBento(' + plan.id + ')">';
+  html += '<div class="bento-fold-left">';
+  html += '<div class="bento-avatar" style="background:' + av.color + '">' + (plan.label ? av.initial : '<i class="ti ti-bowl"></i>') + '</div>';
+  html += '<div class="bento-fold-info">';
+  html += '<div class="bento-fold-name">' + escapeHtml(plan.label || 'Bento ' + (planIdx+1)) + '</div>';
+  html += '<div class="bento-fold-meta">' + (dishNames || 'No dishes') + '</div>';
+  html += '</div></div>';
+  html += '<i class="ti ti-chevron-right bento-fold-chevron"></i>';
+  html += '</div>';
+  html += '<div class="bento-fold-body">';
+  plan.layers.forEach((layer, li) => {
+    if(plan.layers.length > 1) html += '<div class="layer-divider"><i class="ti ti-stack"></i>Layer ' + (li+1) + '</div>';
+    html += '<div id="bento-svg-' + plan.id + '-' + li + '" class="bento-svg-wrap"></div>';
+  });
+  const dwi = allDishes.filter(d => d.ingredients.length);
+  if(dwi.length) {
+    html += '<div class="section-label" style="margin:14px 0 8px"><i class="ti ti-list-check"></i>Prep list</div>';
+    dwi.forEach((d, i) => { html += renderIngrSection(d, i, true); });
+  }
+  html += '</div></div>';
+  return html;
+}
+
+function toggleBento(id) {
+  if(state.expandedBentos.has(id)) state.expandedBentos.delete(id);
+  else state.expandedBentos.add(id);
+  const activeTab = document.querySelector('.nav-tab.active');
+  if(activeTab && activeTab.textContent.includes('Morning')) renderMorning();
+  else if(currentDayView) renderDayView(currentDayView);
+}
+
+function mountBentoSvgs(plans) {
+  plans.forEach(plan => {
+    plan.layers.forEach((layer, li) => {
+      const wrap = document.getElementById('bento-svg-' + plan.id + '-' + li);
+      if(wrap && !wrap.firstChild) wrap.appendChild(renderInteractiveBento(layer, li, false));
+    });
+  });
+}
+
+function renderMorning() {
+  const today = TODAY;
+  const todayPlans = state.plans.filter(p => p.isoDate === today);
+  const upcomingByDate = {};
+  state.plans.filter(p => p.isoDate > today).forEach(p => {
+    if(!upcomingByDate[p.isoDate]) upcomingByDate[p.isoDate] = [];
+    upcomingByDate[p.isoDate].push(p);
+  });
+  const el = document.getElementById('morning-content');
+  let html = '';
+  html += '<div class="day-header">' +
+    '<div class="day-header-icon"><i class="ti ti-sun-high"></i></div>' +
+    '<div class="day-header-text"><div class="day-date">' + fmtDateLong(today) + '</div>' +
+    '<div class="day-greeting">' + (todayPlans.length ? "Here's what to pack today. You've got this." : "No bento on the menu today.") + '</div></div>' +
+    '</div>';
+  if(todayPlans.length) {
+    if(todayPlans.length > 1) html += '<div class="section-label" style="margin-bottom:8px"><i class="ti ti-users"></i>' + todayPlans.length + ' bentos to pack · tap to expand</div>';
+    todayPlans.forEach((p, i) => { html += renderBentoFolder(p, i, todayPlans.length === 1); });
+  } else {
+    html += '<div class="empty-card">' +
+      '<div class="empty-icon"><i class="ti ti-moon-stars"></i></div>' +
+      '<div class="empty-title">Nothing planned for today</div>' +
+      '<div class="empty-text">No worries — plan one now or pull from a saved bento.</div>' +
+      '<div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap">' +
+        '<button class="btn primary sm" onclick="newPlan()"><i class="ti ti-plus"></i>Plan today\'s bento</button>' +
+        '<button class="btn sm" onclick="switchTab(\'saved\')"><i class="ti ti-bookmark"></i>Browse saved</button>' +
+      '</div>' +
+    '</div>';
+  }
+  const dates = Object.keys(upcomingByDate).sort();
+  if(dates.length) {
+    html += '<div class="section-label" style="margin-top:18px"><i class="ti ti-calendar-event"></i>Coming up</div>';
+    dates.forEach(date => {
+      const plans = upcomingByDate[date];
+      const d = new Date(date + 'T00:00:00');
+      const dayDiff = Math.round((d - new Date(today + 'T00:00:00')) / 86400000);
+      const whenText = dayDiff === 1 ? 'Tomorrow' : 'In ' + dayDiff + ' days';
+      const labels = plans.map(p => p.label || 'Bento');
+      const allDishes = plans.flatMap(p => collectDishes(p.layers));
+      html += '<div class="day-card" onclick="openDayView(\'' + date + '\')">' +
+        '<div class="day-card-icon"><i class="ti ti-calendar"></i></div>' +
+        '<div class="day-card-info">' +
+          '<div class="day-card-title">' + whenText + ' · ' + fmtDate(date) + '</div>' +
+          '<div class="day-card-sub">' + allDishes.map(d=>d.name).join(' · ') + '</div>' +
+          '<div class="day-card-bentos">' + labels.map(l => '<span class="bento-pill">' + escapeHtml(l) + '</span>').join('') + '</div>' +
+        '</div>' +
+        '<i class="ti ti-chevron-right" style="color:var(--text-tertiary)"></i>' +
+      '</div>';
+    });
+  }
+  el.innerHTML = html;
+  mountBentoSvgs(todayPlans);
+}
+
+let currentDayView = null;
+
+function openDayView(isoDate) {
+  currentDayView = isoDate;
+  state.expandedBentos.clear();
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-tab')[2].classList.add('active');
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-day').classList.add('active');
+  renderDayView(isoDate);
+}
+
+function renderDayView(isoDate) {
+  const plans = state.plans.filter(p => p.isoDate === isoDate);
+  const el = document.getElementById('day-content');
+  const isToday = isoDate === TODAY;
+  let html = '';
+  html += '<div class="day-header ' + (isToday ? '' : 'upcoming') + '">' +
+    '<div class="day-header-icon"><i class="ti ' + (isToday ? 'ti-sun-high' : 'ti-calendar') + '"></i></div>' +
+    '<div class="day-header-text"><div class="day-date">' + fmtDateLong(isoDate) + '</div>' +
+    '<div class="day-greeting">' + plans.length + ' bento' + (plans.length>1?'s':'') + ' planned · tap to expand</div></div>' +
+    '<div class="day-back" onclick="switchTab(\'morning\')"><i class="ti ti-arrow-left"></i>Today</div>' +
+    '</div>';
+  if(plans.length) {
+    plans.forEach((p, i) => { html += renderBentoFolder(p, i, plans.length === 1); });
+  } else {
+    html += '<div class="empty-card"><div class="empty-icon"><i class="ti ti-bowl-off"></i></div><div class="empty-title">No bentos for this day</div></div>';
+  }
+  el.innerHTML = html;
+  mountBentoSvgs(plans);
+}
+
+function switchTab(tab) {
+  currentDayView = null;
+  document.querySelectorAll('.nav-tab').forEach((t,i) => t.classList.toggle('active', ['planner','saved','morning'][i] === tab));
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + tab).classList.add('active');
+  if(tab === 'morning') { state.expandedBentos.clear(); renderMorning(); }
+  if(tab === 'saved') renderSaved();
+}
+
+function escapeHtml(s) { return String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[c]); }
+function escapeAttr(s) { return String(s).replace(/"/g, '&quot;'); }
+
+renderLayerStack();
+</script>
+
+</body>
+</html>
